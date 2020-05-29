@@ -8,13 +8,22 @@ const fetchJSON = (url) => (
 
 const fetchSWAPI = (uri) => fetchJSON(`https://swapi.dev/api${uri}`);
 
+// swapi uses urls instead of ids...
+// simple fn to get the id out of a url
 const idFromUrl = url => url.split('/')[5];
 
+// simple recreation of Recoil.selectorFamily
+// since it doesnt exist in the npm package
 const selectorFamily = ({ key, get }) =>
   memoize((...args) => Recoil.selector({
     key: `${key}/${JSON.stringify(args)}`,
     get: get(...args),
   }))
+
+// run a selector against an array
+const makeMapSelector = (get) => (selector, items) => (
+  items.map((item) => get(selector(item)))
+)
 
 export const planetSelector = selectorFamily({
   key: 'planets',
@@ -50,10 +59,6 @@ export const starshipSelector = selectorFamily({
     fetchSWAPI(`/starships/${idFromUrl(url)}`)
   )
 })
-
-const makeMapSelector = (get) => (selector, items) => (
-  items.map((item) => get(selector(item)))
-)
 
 export const fullPersonSelector = selectorFamily({
   key: 'fullPerson',
