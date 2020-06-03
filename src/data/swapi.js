@@ -18,6 +18,23 @@ const makeMapSelector = (get) => (selector, items) => (
   ))
 )
 
+export const personSearchTermSelector = Recoil.atom({
+  key: 'personSearchTerm',
+  default: '',
+});
+
+export const focusedPersonSelector = Recoil.atom({
+  key: 'focusedPerson',
+  default: '',
+})
+
+export const personSearchResultsSelector = Recoil.selector({
+  key: 'personSearchResults',
+  get: ({get}) => (
+    fetchSWAPI(`/people/?search=${encodeURIComponent(get(personSearchTermSelector))}`)
+  )
+})
+
 export const planetSelector = Recoil.selectorFamily({
   key: 'planets',
   get: (url) => () => (
@@ -56,6 +73,8 @@ export const starshipSelector = Recoil.selectorFamily({
 export const fullPersonSelector = Recoil.selectorFamily({
   key: 'fullPerson',
   get: (url) => ({get}) => {
+    if (!url) return null;
+
     const mapSelector = makeMapSelector(get);
     const person = get(personSelector(url));
     const homeworld = get(planetSelector(person.homeworld));
