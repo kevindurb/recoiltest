@@ -1,5 +1,4 @@
 import * as Recoil from 'recoil';
-import memoize from 'fast-memoize';
 
 const fetchJSON = (url) => (
   fetch(url)
@@ -12,55 +11,49 @@ const fetchSWAPI = (uri) => fetchJSON(`https://swapi.dev/api${uri}`);
 // simple fn to get the id out of a url
 const idFromUrl = url => url.split('/')[5];
 
-// simple recreation of Recoil.selectorFamily
-// since it doesnt exist in the npm package
-const selectorFamily = ({ key, get }) =>
-  memoize((...args) => Recoil.selector({
-    key: `${key}/${JSON.stringify(args)}`,
-    get: get(...args),
-  }))
-
 // run a selector against an array
 const makeMapSelector = (get) => (selector, items) => (
-  items.map((item) => get(selector(item)))
+  get(Recoil.waitForAll(
+    items.map((item) => selector(item))
+  ))
 )
 
-export const planetSelector = selectorFamily({
+export const planetSelector = Recoil.selectorFamily({
   key: 'planets',
   get: (url) => () => (
     fetchSWAPI(`/planets/${idFromUrl(url)}`)
   )
 })
 
-export const personSelector = selectorFamily({
+export const personSelector = Recoil.selectorFamily({
   key: 'people',
   get: (url) => () => (
     fetchSWAPI(`/people/${idFromUrl(url)}`)
   )
 })
 
-export const vehicleSelector = selectorFamily({
+export const vehicleSelector = Recoil.selectorFamily({
   key: 'people',
   get: (url) => () => (
     fetchSWAPI(`/vehicles/${idFromUrl(url)}`)
   )
 })
 
-export const filmSelector = selectorFamily({
+export const filmSelector = Recoil.selectorFamily({
   key: 'films',
   get: (url) => () => (
     fetchSWAPI(`/films/${idFromUrl(url)}`)
   )
 })
 
-export const starshipSelector = selectorFamily({
+export const starshipSelector = Recoil.selectorFamily({
   key: 'starships',
   get: (url) => () => (
     fetchSWAPI(`/starships/${idFromUrl(url)}`)
   )
 })
 
-export const fullPersonSelector = selectorFamily({
+export const fullPersonSelector = Recoil.selectorFamily({
   key: 'fullPerson',
   get: (url) => ({get}) => {
     const mapSelector = makeMapSelector(get);
